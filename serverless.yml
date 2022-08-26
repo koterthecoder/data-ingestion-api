@@ -1,0 +1,50 @@
+service: data-ingestion-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+
+plugins:
+  - serverless-offline
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - httpApi:
+          path: /
+          method: get
+
+
+  scheduledJob:
+    handler: handler.scheduledJob
+    timeout: 900
+    events:
+      # - schedule: rate(1 minute) # run every minute
+      - schedule: rate(1 day) # run every day
+
+
+resources:
+  Resources:
+
+    SomeTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: "primaryId"
+          AttributeType: "S"
+        - AttributeName: "otherAttribute"
+          AttributeType: "S"
+        KeySchema:
+        - AttributeName: "primaryId"
+          KeyType: "HASH"
+        BillingMode: PAY_PER_REQUEST
+        TableName: SomeTableName
+
+
+    SomeSecret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: SomeSecret
+        Description: 'This is a secret that can be managed in AWS'
